@@ -32,4 +32,6 @@ const convertedCurrency = async (from, to, amount) => {
 
 convertedCurrency("USD", "GBP", 20).then((response) => {
   console.log(response);
+}).catch((e)=>{
+  console.log('Something went wrong.');
 });

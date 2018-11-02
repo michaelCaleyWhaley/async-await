@@ -10,28 +10,43 @@ const fixerUri =
 const restCountry = "https://restcountries.eu/rest/v2/currency/";
 
 const getExchangeRate = async (from, to) => {
-  const response = await axios.get(fixerUri);
-  const euro = 1 / response.data.rates[from];
-  const rate = euro * response.data.rates[to];
-  return rate;
+  try {
+    const response = await axios.get(fixerUri);
+    const euro = 1 / response.data.rates[from];
+    const rate = euro * response.data.rates[to];
+    if (isNaN(rate)) {
+      throw new Error();
+    }
+    return rate;
+  } catch (e) {
+    throw new Error(`Unable to get exchange rate for ${from} and ${to}`);
+  }
 };
 
 const getCountries = async currencyCode => {
-  const response = await axios.get(`${restCountry}${currencyCode}`);
-  return response.data.map(country => {
-    return country.name;
-  });
+  try {
+    const response = await axios.get(`${restCountry}${currencyCode}`);
+    return response.data.map(country => {
+      return country.name;
+    });
+  } catch (e) {
+    throw new Error(`Unable to get countries list for ${currencyCode}`);
+  }
 };
 
 const convertedCurrency = async (from, to, amount) => {
   const rate = await getExchangeRate(from, to);
   const convertedAmount = (amount * rate).toFixed(2);
   const countries = await getCountries(to);
-  return `${amount} ${from} is worth ${convertedAmount} ${to}. You can spend these in the following countries: ${countries.join(', ')}`;
+  return `${amount} ${from} is worth ${convertedAmount} ${to}. You can spend these in the following countries: ${countries.join(
+    ", "
+  )}`;
 };
 
-convertedCurrency("USD", "GBP", 20).then((response) => {
-  console.log(response);
-}).catch((e)=>{
-  console.log('Something went wrong.');
-});
+convertedCurrency("USD", "GBP", 20)
+  .then(response => {
+    console.log(response);
+  })
+  .catch(e => {
+    console.log(e.message);
+  });
